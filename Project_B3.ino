@@ -213,6 +213,7 @@ void loop() {
 }
 
 //Voting Functions
+//These are the functions that are used for voting.
 void continouingToVote(int voterID){
   votingProcess();
   lcd.print("Voted");
