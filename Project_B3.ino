@@ -35,9 +35,9 @@ const int maxLength=5; //It defines the max length of the id that can be entered
 int intInput;
 int idReturned;
 int voted;//Counter to check whether the vote is casted successfully or not for each vote
-EEPROM.write(805,0);
-int address_id = EEPROM.read(805);
-//int address_id =0;
+//EEPROM.write(805,0);
+//int address_id = EEPROM.read(805);
+int address_id =0;
  //This represents addresses in the eeprom of the arduino to store the id's of voted people 
 
 //Functions
@@ -54,7 +54,7 @@ bool searchInEEPROM(int uniId){
   return false;
 }
 
-void storingId(int ID){
+void storingID(int ID){
   EEPROM.write(address_id , ID);
   address_id++;
   EEPROM.write(805,address_id);
