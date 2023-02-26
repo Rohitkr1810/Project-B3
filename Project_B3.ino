@@ -196,7 +196,7 @@ void loop() {
     int fetchID;
     //int returnedID;
     while(idReturned == 0){
-      while(!getFingerprintIDez());
+      while(!getFingerprintID());
     }
     bool isVoterVoted = searchInEEPROM(finger.fingerID);
     if(isVoterVoted == true){
@@ -217,7 +217,7 @@ void loop() {
 void continouingToVote(int voterID){
   votingProcess();
   lcd.print("Voted");
-  delay(100);
+  delay(2000);
   lcd.clear();
   lcd.print("Processing...");
   delay(1000);
@@ -272,7 +272,7 @@ void successfullVote(){
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Voted Successfully");
-  delay(2000);
+  delay(3000);
 }
 
 void voterAlreadyVoted(){
@@ -518,31 +518,96 @@ uint8_t getFingerprintEnroll() {
 }
 
 //Identifying Function
-int getFingerprintIDez() {
+uint8_t getFingerprintID() {
+  lcd.clear();
+  lcd.print("Place Finger....");
   uint8_t p = finger.getImage();
-  if (p != FINGERPRINT_OK){
-    return -1;
+  switch (p) {
+    case FINGERPRINT_OK:
+      Serial.println("Image taken");
+      lcd.clear();
+      lcd.print("Finger Scanned....");
+      break;
+    case FINGERPRINT_NOFINGER:
+      Serial.println("No finger detected");
+      return p;
+    case FINGERPRINT_PACKETRECIEVEERR:
+      Serial.println("Communication error");
+      return p;
+    case FINGERPRINT_IMAGEFAIL:
+      Serial.println("Imaging error");
+      return p;
+    default:
+      Serial.println("Unknown error");
+      return p;
   }
+
+  // OK success!
 
   p = finger.image2Tz();
-  if (p != FINGERPRINT_OK){
-    return -1;
+  switch (p) {
+    case FINGERPRINT_OK:
+      Serial.println("Image converted");
+      break;
+    case FINGERPRINT_IMAGEMESS:
+      Serial.println("Image too messy");
+      return p;
+    case FINGERPRINT_PACKETRECIEVEERR:
+      Serial.println("Communication error");
+      return p;
+    case FINGERPRINT_FEATUREFAIL:
+      Serial.println("Could not find fingerprint features");
+      return p;
+    case FINGERPRINT_INVALIDIMAGE:
+      Serial.println("Could not find fingerprint features");
+      return p;
+    default:
+      Serial.println("Unknown error");
+      return p;
   }
 
-  p = finger.fingerFastSearch();
-  if (p == FINGERPRINT_OK){
+  // OK converted!
+  p = finger.fingerSearch();
+  if (p == FINGERPRINT_OK) {
+    Serial.println("Found a print match!");
+    lcd.clear();
+    lcd.print("Finger found");
+    lcd.setCursor(0,1);
+    lcd.print("with ID: "); lcd.print(finger.fingerID);
+    delay(3000);
     idReturned++;
     
-  }
-  else{
+  } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
+    Serial.println("Communication error");
     idReturned++;
-    lcd.clear();
-    lcd.print("Finger Not Found");
-    delay(2000);
+    return p;
+  } else if (p == FINGERPRINT_NOTFOUND) {
+    Serial.println("Did not find a match");
+    idReturned++;
+    return p;
+  } else {
+    Serial.println("Unknown error");
+    idReturned++;
+    return p;
   }
+  
+  // found a match!
+  //returning the found fingerprint
+  return finger.fingerID;
+}
+
+// returns -1 if failed, otherwise returns ID #
+int getFingerprintIDez() {
+  uint8_t p = finger.getImage();
+  if (p != FINGERPRINT_OK)  return -1;
+
+  p = finger.image2Tz();
+  if (p != FINGERPRINT_OK)  return -1;
+
+  p = finger.fingerFastSearch();
+  if (p != FINGERPRINT_OK)  return -1;
 
   // found a match!
-  Serial.print("Found ID #"); Serial.print(finger.fingerID);
-  Serial.print(" with confidence of "); Serial.println(finger.confidence);
+  
   return finger.fingerID;
 }
