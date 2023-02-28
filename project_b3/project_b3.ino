@@ -95,6 +95,7 @@ void setup() {
   pinMode(A0,INPUT);                      
   lcd.init();
   lcd.backlight();
+  EEPROM.begin();
   Serial.begin(9600);
   lcdWelcome(); //This is a welcome screen that is shown when the system
   //turned on for the first time.
@@ -210,8 +211,57 @@ void loop() {
 }
 
 //Voting Functions
+int waitForButtonPress(){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  delay(100);
+  lcd.print("Cast your Vote");
+  int vote;
+  while(1){
+    vote = analogRead(A0);
+    if(vote>=80 && vote<=100) return 1;
+    else if(vote>=500 && vote<=520) return 2;
+    else if(vote >=970 && vote<=990) return 3;
+    else if(vote >=1000) return 4;
+    delay(100);
+  }
+}
+
+int processVote(int temp){
+  if(temp ==1){
+    partyA++;
+    totalVotes++;
+    EEPROM.write(800, partyA);
+    EEPROM.write(804, totalVotes);
+    delay(100);
+  }
+  else if(temp ==2){
+    partyB++;
+    totalVotes++;
+    EEPROM.write(801, partyB);
+    EEPROM.write(804, totalVotes);
+    delay(100);
+  }
+  else if(temp ==3){
+    partyC++;
+    totalVotes++;
+    EEPROM.write(802, partyC);
+    EEPROM.write(804, totalVotes);
+    delay(100);
+  }
+  else if(temp ==4){
+    partyD++;
+    totalVotes++;
+    EEPROM.write(803, partyD);
+    EEPROM.write(804, totalVotes);
+    delay(100);
+  }
+  
+}
+
 void continouingToVote(int voterID){
-  votingProcess();
+  int returnedVote = waitForButtonPress();
+  processVote(returnedVote);
   lcd.print("Voted");
   delay(2000);
   lcd.clear();
@@ -219,49 +269,6 @@ void continouingToVote(int voterID){
   delay(1000);
   storingId(voterID);
   successfullVote();
-}
-
-int votingProcess(){
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Processing...");
-  delay(1000);
-  lcd.clear();
-  lcd.print("Cast your Vote");
-  int vote =0;
-  voted=0;
-  while(voted == 0){
-  vote = analogRead(A0);
-  //Serial.println(vote);
-  if(vote >=80 && vote<=100){
-    partyA++;
-    totalVotes++;
-    voted++;
-    EEPROM.write(800,partyA);
-    EEPROM.write(804,totalVotes);
-  }
-  else if(vote>= 500 && vote<=520){
-    partyB++;
-    totalVotes++;
-    voted++;
-    EEPROM.write(801,partyA);
-    EEPROM.write(804,totalVotes);
-  }
-  else if(vote>=970 && vote<=990){
-    partyC++;
-    totalVotes++;
-    voted++;
-    EEPROM.write(802,partyA);
-    EEPROM.write(804,totalVotes);
-  }
-  else if(vote >=1000){
-    partyD++;
-    totalVotes++;
-    voted++;
-    EEPROM.write(803,partyA);
-    EEPROM.write(804,totalVotes);
-  }
-  }
 }
 
 void successfullVote(){
