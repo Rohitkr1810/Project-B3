@@ -227,7 +227,7 @@ int waitForButtonPress(){
   }
 }
 
-int processVote(int temp){
+void processVote(int temp){
   if(temp ==1){
     partyA++;
     totalVotes++;
@@ -262,6 +262,7 @@ int processVote(int temp){
 void continouingToVote(int voterID){
   int returnedVote = waitForButtonPress();
   processVote(returnedVote);
+  lcd.clear();
   lcd.print("Voted");
   delay(2000);
   lcd.clear();
