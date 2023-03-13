@@ -219,10 +219,18 @@ int waitForButtonPress(){
   int vote;
   while(1){
     vote = analogRead(A0);
-    //if(vote>=80 && vote<=100) return 1;
-    if(vote>=500 && vote<=540) return 2;
-    else if(vote >=930 && vote<=990) return 3;
-    else if(vote >990) return 4;
+    if(vote>=50 && vote<=100){
+      return 1;
+    }
+    if(vote>=330 && vote<=380){
+      return 2;
+    }
+    else if(vote >=640 && vote<=660) {
+      return 3;
+    }
+    else if(vote >670) {
+      return 4;
+    }
     delay(100);
   }
 }
